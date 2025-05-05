@@ -1,5 +1,5 @@
 
-// This file connects to the Python backend using Whisper for audio transcription
+// This file connects to the Python backend for audio processing
 
 export interface TranscriptionResult {
   text: string;
@@ -15,8 +15,6 @@ export const transcribeAudio = async (file: File): Promise<TranscriptionResult> 
   
   try {
     // Send the audio file to the backend
-    // Assuming the backend is running at http://localhost:5000
-    // Adjust the URL based on your backend configuration
     const response = await fetch('http://localhost:5000/transcribe', {
       method: 'POST',
       body: formData,

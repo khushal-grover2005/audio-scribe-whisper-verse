@@ -1,4 +1,4 @@
 
 flask>=2.0.0
 flask-cors>=3.0.10
-openai-whisper>=20230124
+pydub>=0.25.1
