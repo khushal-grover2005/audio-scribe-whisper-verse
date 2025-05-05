@@ -1,7 +1,7 @@
 
-# WhisperVerse - Audio Processing App
+# WhisperVerse - Audio Transcription App
 
-A full-stack application for processing audio files.
+A full-stack application for transcribing audio files using OpenAI's Whisper model.
 
 ## Setup and Installation
 
@@ -26,12 +26,21 @@ The frontend will be available at http://localhost:8080 (or another port specifi
 cd backend
 ```
 
-2. Install the required packages globally (no virtual environment):
+2. Create a virtual environment (recommended):
 ```
-pip install flask flask-cors pydub
+python -m venv venv
 ```
 
-3. Start the Flask server:
+3. Activate the virtual environment:
+   - Windows: `venv\Scripts\activate`
+   - macOS/Linux: `source venv/bin/activate`
+
+4. Install dependencies:
+```
+pip install -r requirements.txt
+```
+
+5. Start the Flask server:
 ```
 python app.py
 ```
@@ -42,8 +51,8 @@ The backend will be available at http://localhost:5000.
 
 1. Open the frontend application in your browser
 2. Upload an audio file (MP3, WAV, etc.)
-3. Wait for the processing to complete
-4. View the results
+3. Wait for the transcription to complete
+4. View, copy, or download the transcription result
 
 ## Note
 

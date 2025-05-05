@@ -3,11 +3,14 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
 import tempfile
-from pydub import AudioSegment
+import whisper
 import time
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
+
+# Load the Whisper model once at startup
+model = whisper.load_model("base")
 
 @app.route('/transcribe', methods=['POST'])
 def transcribe():
@@ -22,17 +25,13 @@ def transcribe():
     audio_file.save(temp_path)
     
     try:
-        # Instead of using Whisper, we'll just return basic audio info
-        # since we're focusing on the file upload functionality
+        # Transcribe the audio using Whisper
         start_time = time.time()
+        result = model.transcribe(temp_path)
         
-        # Get audio duration using pydub
-        audio = AudioSegment.from_file(temp_path)
-        duration_seconds = len(audio) / 1000.0
-        
-        # Return mock transcription with audio info
+        # Return the transcription result
         return jsonify({
-            "text": f"This is a simulated transcription. Your audio file '{audio_file.filename}' is {duration_seconds:.2f} seconds long.",
+            "text": result["text"],
             "processing_time": time.time() - start_time
         })
     except Exception as e:
