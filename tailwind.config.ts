@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -52,6 +53,11 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				whisper: {
+					light: '#6366f1',
+					DEFAULT: '#4f46e5',
+					dark: '#4338ca',
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -84,11 +90,26 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'pulse-opacity': {
+					'0%, 100%': { opacity: '0.4' },
+					'50%': { opacity: '0.8' }
+				},
+				'wave': {
+					'0%': { transform: 'scaleY(0.5)' },
+					'50%': { transform: 'scaleY(1.2)' },
+					'100%': { transform: 'scaleY(0.5)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse-opacity': 'pulse-opacity 2s ease-in-out infinite',
+				'wave-1': 'wave 1.3s ease-in-out infinite',
+				'wave-2': 'wave 1.5s ease-in-out infinite',
+				'wave-3': 'wave 1.7s ease-in-out infinite',
+				'wave-4': 'wave 1.9s ease-in-out infinite',
+				'wave-5': 'wave 2.1s ease-in-out infinite'
 			}
 		}
 	},
