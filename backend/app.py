@@ -3,14 +3,14 @@ from flask_cors import CORS
 import os
 import tempfile
 import time
-from openai import OpenAI
+from deepgram import DeepgramClient, PrerecordedOptions, FileSource
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)
 
-# Initialize the OpenAI client
-# It will automatically look for the "OPENAI_API_KEY" environment variable
-client = OpenAI()
+# Initialize Deepgram Client
+# It automatically looks for the "DEEPGRAM_API_KEY" environment variable
+dg_client = DeepgramClient()
 
 @app.route('/transcribe', methods=['POST'])
 def transcribe():
@@ -19,27 +19,35 @@ def transcribe():
     
     audio_file = request.files['audio']
     
-    # Save the uploaded file to a temporary location
-    # Vercel allows writing to /tmp
+    # Save to /tmp for Vercel compatibility
     temp_dir = tempfile.gettempdir()
-    _, temp_ext = os.path.splitext(audio_file.filename)
-    temp_path = os.path.join(temp_dir, f"upload_{int(time.time())}{temp_ext}")
-    
+    temp_path = os.path.join(temp_dir, f"{int(time.time())}_{audio_file.filename}")
     audio_file.save(temp_path)
     
     try:
         start_time = time.time()
         
-        # Open the saved file and send it to OpenAI Whisper API
-        with open(temp_path, "rb") as f:
-            transcription = client.audio.transcriptions.create(
-                model="whisper-1", 
-                file=f
-            )
+        with open(temp_path, "rb") as file:
+            buffer_data = file.read()
+
+        payload: FileSource = {
+            "buffer": buffer_data,
+        }
+
+        # Configure Deepgram options
+        options = PrerecordedOptions(
+            model="nova-3",
+            smart_format=True,
+        )
+
+        # Call the Deepgram API
+        response = dg_client.listen.rest.v("1").transcribe_file(payload, options)
         
-        # Return the transcription result
+        # Extract the transcript text
+        transcript = response.results.channels[0].alternatives[0].transcript
+
         return jsonify({
-            "text": transcription.text,
+            "text": transcript,
             "processing_time": time.time() - start_time
         })
         
@@ -47,10 +55,8 @@ def transcribe():
         return jsonify({"error": str(e)}), 500
     
     finally:
-        # Clean up the temporary file immediately
         if os.path.exists(temp_path):
             os.remove(temp_path)
-
 
 if __name__ == '__main__':
     app.run(debug=True)
