@@ -1,5 +1,3 @@
-// This file connects to the Python backend using Whisper for audio transcription
-
 export interface TranscriptionResult {
   text: string;
   duration: number;
@@ -8,37 +6,47 @@ export interface TranscriptionResult {
 export const transcribeAudio = async (file: File): Promise<TranscriptionResult> => {
   const startTime = Date.now();
   
-  // Create a FormData object to send the file
-  const formData = new FormData();
-  formData.append('audio', file);
+  // Vite looks for the VITE_ prefix to allow frontend access to this key
+  const apiKey = import.meta.env.VITE_DEEPGRAM_API_KEY;
+  
+  if (!apiKey) {
+    throw new Error("Deepgram API key is missing. Please ensure VITE_DEEPGRAM_API_KEY is set in Vercel.");
+  }
   
   try {
-    // DYNAMIC URL FIX: 
-    // If deployed to Vercel (Production), use the relative route '/api/transcribe'
-    // If running locally (Development), use 'http://localhost:5000/transcribe'
-    const endpoint = import.meta.env.PROD 
-      ? '/api/transcribe' 
-      : 'http://localhost:5000/transcribe';
-
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      body: formData,
-    });
+    // DIRECT TO DEEPGRAM PIPELINE
+    // Bypasses the Vercel 4.5MB limit by uploading straight from the browser
+    const response = await fetch(
+      'https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${apiKey}`,
+          // Send the raw audio type, defaulting to wav if unknown
+          'Content-Type': file.type || 'audio/wav', 
+        },
+        body: file, // Send the raw file binary directly
+      }
+    );
     
     if (!response.ok) {
-      throw new Error(`Server responded with status: ${response.status}`);
+      const errorData = await response.json().catch(() => null);
+      throw new Error(`Deepgram Error: ${errorData?.err_msg || response.statusText}`);
     }
     
     const data = await response.json();
     const endTime = Date.now();
     const duration = (endTime - startTime) / 1000;
     
+    // Navigate Deepgram's JSON response structure to find the text
+    const transcript = data.results?.channels[0]?.alternatives[0]?.transcript || "";
+    
     return {
-      text: data.text,
+      text: transcript,
       duration: duration,
     };
   } catch (error) {
-    console.error('Error during transcription:', error);
+    console.error('Error during direct transcription:', error);
     throw error;
   }
 };
