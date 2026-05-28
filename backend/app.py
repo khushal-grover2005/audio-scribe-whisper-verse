@@ -1,18 +1,20 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
 import os
 import tempfile
 import time
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 from deepgram import DeepgramClient, PrerecordedOptions, FileSource
 
 app = Flask(__name__)
+# Enable CORS so the Vite frontend can communicate with the Flask backend locally
 CORS(app)
 
 # Initialize Deepgram Client
 # It automatically looks for the "DEEPGRAM_API_KEY" environment variable
 dg_client = DeepgramClient()
 
-@app.route('/transcribe', methods=['POST'])
+# UPDATED ROUTE: Changed to /api/transcribe to match vercel.json rewrites
+@app.route('/api/transcribe', methods=['POST'])
 def transcribe():
     if 'audio' not in request.files:
         return jsonify({"error": "No audio file provided"}), 400
@@ -59,4 +61,4 @@ def transcribe():
             os.remove(temp_path)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5000)
