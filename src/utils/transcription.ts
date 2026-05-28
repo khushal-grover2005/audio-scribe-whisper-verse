@@ -1,4 +1,3 @@
-
 // This file connects to the Python backend using Whisper for audio transcription
 
 export interface TranscriptionResult {
@@ -14,10 +13,14 @@ export const transcribeAudio = async (file: File): Promise<TranscriptionResult> 
   formData.append('audio', file);
   
   try {
-    // Send the audio file to the backend
-    // Assuming the backend is running at http://localhost:5000
-    // Adjust the URL based on your backend configuration
-    const response = await fetch('http://localhost:5000/transcribe', {
+    // DYNAMIC URL FIX: 
+    // If deployed to Vercel (Production), use the relative route '/api/transcribe'
+    // If running locally (Development), use 'http://localhost:5000/transcribe'
+    const endpoint = import.meta.env.PROD 
+      ? '/api/transcribe' 
+      : 'http://localhost:5000/transcribe';
+
+    const response = await fetch(endpoint, {
       method: 'POST',
       body: formData,
     });
